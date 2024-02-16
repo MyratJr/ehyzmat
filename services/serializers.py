@@ -1,0 +1,97 @@
+from rest_framework import serializers
+from .models import Service, ServiceGalleryImage, Service_Category
+from advertisement.models import advertisementModel
+from ratings.models import Like_Service, View_Service
+
+
+class ServiceGalleryImageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ServiceGalleryImage
+        fields = ["image"]
+
+
+class ServicesSerializers(serializers.ModelSerializer):
+    uploaded_images = serializers.ListField(write_only=True)
+    liked_count = serializers.SerializerMethodField(read_only=True)
+    viewed_count = serializers.SerializerMethodField(read_only=True)
+
+    @staticmethod
+    def get_liked_count(instance):
+        return Like_Service.objects.filter(service=instance).count()
+
+    @staticmethod
+    def get_viewed_count(instance):
+        return View_Service.objects.filter(service=instance).count()
+    
+    class Meta:
+        model = Service
+        fields = ["id",
+                  "user", 
+                  "name", 
+                  "price", 
+                  "category", 
+                  "place", 
+                  "experience", 
+                  "description", 
+                  "primary_image", 
+                  "uploaded_images",
+                  "liked_count",
+                  "viewed_count"
+                ]
+    
+
+    def create(self, validated_data):
+        uploaded_images_id = validated_data.pop("uploaded_images")
+        new_service = Service.objects.create(**validated_data)
+        string = str(uploaded_images_id)
+        inner_string = string[2:-2]
+        uploaded_images_id = eval(inner_string)  
+        for image_id in uploaded_images_id:
+            relating_image = ServiceGalleryImage.objects.get(id=image_id)
+            relating_image.product = new_service
+            relating_image.save()
+        return new_service
+    
+    def update(self, instance, validated_data):
+        uploaded_images_id = validated_data.pop("uploaded_images")
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        instance.save()
+        string = str(uploaded_images_id)
+        inner_string = string[2:-2]
+        uploaded_images_id = eval(inner_string)  
+        for image_id in uploaded_images_id:
+            relating_image = ServiceGalleryImage.objects.get(id=image_id)
+            relating_image.product = instance
+            relating_image.save()
+        return instance
+    
+
+class HomeServicesSerializers(serializers.ModelSerializer):
+    liked_count = serializers.SerializerMethodField()
+    viewed_count = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_liked_count(instance):
+        return Like_Service.objects.filter(service=instance).count()
+
+    @staticmethod
+    def get_viewed_count(instance):
+        return View_Service.objects.filter(service=instance).count()
+    
+    class Meta:
+        model = Service
+        fields = '__all__'
+
+
+class HomeCategoriesSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Service_Category
+        fields = '__all__'
+
+
+class HomeAdvertisementsSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = advertisementModel
+        fields = '__all__'

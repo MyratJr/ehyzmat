@@ -1,0 +1,14 @@
+from knox import views as knox_views
+from django.urls import path
+from .views import *
+
+urlpatterns = [
+    path('api/register', RegisterAPI.as_view(), name='register'),
+    path('api/login', LoginAPI.as_view(), name='login'),
+    path('api/logout', knox_views.LogoutView.as_view(), name='logout'),
+    path('api/logoutall', knox_views.LogoutAllView.as_view(), name='logoutall'),
+    path('user/<int:pk>', User_CategoriesAPIView.as_view(), name='user'),
+    path('users/<int:pk>', LikeUserAPIView.as_view(), name='like-user'),
+    path('get-objects/', LikeToUserView.as_view(), name='get_objects'),
+    path('get-my-like/', LikeOfUserView.as_view(), name='get_my_like'),
+]
