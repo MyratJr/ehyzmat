@@ -1,0 +1,7 @@
+media
+venv
+.env
+gitignore
+db.sqlite.3
+**/__pycache__/
+**/migrations/
