@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'knox',
     'django_filters',
+    'django_crontab',
 ]
 
 
@@ -76,7 +77,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'knox.auth.TokenAuthentication',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 1
 }
+
+
+CRONJOBS = [
+    ('*/5 * * * *', 'tasks.tasks.UpdateBooleanFieldJob'),
+]
 
 
 SWAGGER_SETTINGS = {
