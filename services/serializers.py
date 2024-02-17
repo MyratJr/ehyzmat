@@ -75,16 +75,16 @@ class ServicesSerializers(serializers.ModelSerializer):
     
 
 class HomeServicesSerializers(serializers.ModelSerializer):
-    liked_count = serializers.SerializerMethodField()
-    viewed_count = serializers.SerializerMethodField()
+    # liked_count = serializers.SerializerMethodField()
+    # viewed_count = serializers.SerializerMethodField()
 
-    @staticmethod
-    def get_liked_count(instance):
-        return Like_Service.objects.filter(service=instance).count()
+    # @staticmethod
+    # def get_liked_count(instance):
+    #     return Like_Service.objects.filter(service=instance).count()
 
-    @staticmethod
-    def get_viewed_count(instance):
-        return View_Service.objects.filter(service=instance).count()
+    # @staticmethod
+    # def get_viewed_count(instance):
+    #     return View_Service.objects.filter(service=instance).count()
     
     class Meta:
         model = Service

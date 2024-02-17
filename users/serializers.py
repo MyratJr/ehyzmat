@@ -12,6 +12,18 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'phone', 'email']
 
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['avatar', 'banner_image', 'username', 'email', 'experience', 'address', 'summary', 'web', 'tiktok', 'instagram', 'imo', 'fullname', 'phone']
+
+
+class GetUsersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = "__all__"
+
     
 class RegisterSerializer(serializers.ModelSerializer):
         class Meta:
@@ -47,14 +59,9 @@ class UserViewSerializers(serializers.ModelSerializer):
                     "imo", 
                     "instagram", 
                     "tiktok",
-                    "view_counter"
+                    "view_counter",
+                    "like_counter"
                 ]
-
-    def get_related_data(self, obj):
-        print(obj,'fsdfsad')
-        categories = Like_Service.objects.filter(user=obj).values('id')
-        posts = Like_User.objects.filter(user=obj).values('id')
-        return {'categories': categories, 'posts': posts, 'additional_table1': ..., 'additional_table2': ...}
     
 
 class AuthTokenSerializer(serializers.Serializer):

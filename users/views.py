@@ -2,6 +2,7 @@ from rest_framework import generics, permissions, mixins
 from services.serializers import HomeServicesSerializers
 from ratings.models import Like_User, View_User, Rate_User
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth import login
 from services.models import Service
 from knox.views import LoginView
@@ -10,8 +11,6 @@ from .models import User
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
-from django.contrib.auth.decorators import login_required
 from rest_framework import status
 
 
@@ -37,6 +36,32 @@ class LoginAPI(LoginView):
         return super(LoginAPI, self).post(request, format=None)
     
 
+class UpdateUserAPIView(mixins.UpdateModelMixin,
+                        generics.GenericAPIView
+                        ):
+    queryset = User.objects.all()
+    serializer_class = UpdateUserSerializer
+    parser_classes = [MultiPartParser,FormParser]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+    
+    def patch(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+
+class GetUsersAPIView(mixins.ListModelMixin,
+                    generics.GenericAPIView
+                    ):
+    queryset = User.objects.all()
+    serializer_class = GetUsersSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+
 class User_CategoriesAPIView(mixins.RetrieveModelMixin, generics.GenericAPIView):
     queryset = User.objects.all()
     serializer_class = UserViewSerializers
@@ -53,8 +78,8 @@ class User_CategoriesAPIView(mixins.RetrieveModelMixin, generics.GenericAPIView)
                 instance.save()
         new_data = [{
                     "User_data": serializer.data,
-                    "Liked_number": Like_User.objects.filter(favorited_user=instance).count(),
-                    "Viewed_number": View_User.objects.filter(viewed_user=instance).count(),
+                    # "Liked_number": Like_User.objects.filter(favorited_user=instance).count(),
+                    # "Viewed_number": View_User.objects.filter(viewed_user=instance).count(),
                     },{
                     "User_services": HomeServicesSerializers(services, many=True).data,
                     }]
