@@ -22,4 +22,4 @@ class User(AbstractUser):
     like_counter = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.username
+        return str(self.id)

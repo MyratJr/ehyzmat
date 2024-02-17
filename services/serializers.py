@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Service, ServiceGalleryImage, Service_Category
 from advertisement.models import advertisementModel
 from ratings.models import Like_Service, View_Service
-
+from users.models import User
 
 class ServiceGalleryImageSerializer(serializers.ModelSerializer):
 
@@ -13,16 +13,21 @@ class ServiceGalleryImageSerializer(serializers.ModelSerializer):
 
 class ServicesSerializers(serializers.ModelSerializer):
     uploaded_images = serializers.ListField(write_only=True)
-    liked_count = serializers.SerializerMethodField(read_only=True)
-    viewed_count = serializers.SerializerMethodField(read_only=True)
+    like_counter = serializers.SerializerMethodField(read_only=True)
+    view_counter = serializers.SerializerMethodField(read_only=True)
+    rate_point = serializers.SerializerMethodField(read_only=True)
 
     @staticmethod
-    def get_liked_count(instance):
+    def get_like_counter(instance):
         return Like_Service.objects.filter(service=instance).count()
 
     @staticmethod
-    def get_viewed_count(instance):
+    def get_view_counter(instance):
         return View_Service.objects.filter(service=instance).count()
+    
+    @staticmethod
+    def get_rate_point(instance):
+        return User.objects.get(pk=instance.user.id).rate_point
     
     class Meta:
         model = Service
@@ -36,8 +41,9 @@ class ServicesSerializers(serializers.ModelSerializer):
                   "description", 
                   "primary_image", 
                   "uploaded_images",
-                  "liked_count",
-                  "viewed_count"
+                  "rate_point",
+                  "view_counter",
+                  "like_counter",
                 ]
     
 

@@ -1,18 +1,18 @@
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from .models import Service, ServiceGalleryImage, Service_Category
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.parsers import MultiPartParser, FormParser
+from django_filters.rest_framework import DjangoFilterBackend
 from advertisement.views import check_advertisement_time
+from ratings.models import View_Service, Like_Service
 from rest_framework import viewsets, mixins, generics
 from advertisement.models import advertisementModel
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.db.models import F
 from .serializers import *
-from ratings.models import View_Service, Like_Service
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-import django_filters
 
 # Weighted sum: (16 * 5) + (11 * 4) + (40 * 3) + (10 * 2) + (10 * 1) = 286
 # Total likes: 16 + 11 + 40 + 10 + 10 = 87
@@ -85,10 +85,12 @@ class LikeServiceAPIView(APIView):
             liked_service.like_counter += 1
             liked_service.save()
         return Response({"success": True, "likes": liked_service.like_counter})
-    
 
+    
 class FilterServiceList(generics.ListAPIView):
     queryset = Service.objects.all()
     serializer_class = ServicesSerializers
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['user__username', 'user__fullname', 'name']
+    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
+    search_fields = ['user__username', 'user__fullname', 'name', 'category__name']
+    ordering_fields = ["user__rate_point", "experience"]
+    filterset_fields = ['category', 'place']
