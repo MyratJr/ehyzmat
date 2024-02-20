@@ -32,7 +32,6 @@ INSTALLED_APPS = [
     'drf_yasg',
     'knox',
     'django_filters',
-    'django_crontab',
 ]
 
 
@@ -80,11 +79,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 1
 }
-
-
-CRONJOBS = [
-    ('*/5 * * * *', 'tasks.tasks.UpdateBooleanFieldJob'),
-]
 
 
 SWAGGER_SETTINGS = {
@@ -160,3 +154,7 @@ MEDIA_URL = '/media/'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CELERY
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"

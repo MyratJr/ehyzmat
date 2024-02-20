@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from advertisement.views import check_advertisement_time
 from ratings.models import View_Service, Like_Service
 from rest_framework import viewsets, mixins, generics
-from advertisement.models import advertisementModel
+from advertisement.models import Advertisement
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -56,7 +56,7 @@ class HomeDataView(APIView):
     def get(self, request):
         services = Service.objects.all(vip_is_active=True)
         categories = Service_Category.objects.all()
-        advertisements = advertisementModel.objects.filter(is_active=True)
+        advertisements = Advertisement.objects.filter(is_active=True)
         check_advertisement_time(advertisements)
         services_serializer = HomeServicesSerializers(services, many=True, context={'request': request})
         categories_serializer = HomeCategoriesSerializers(categories, many=True, context={'request': request})

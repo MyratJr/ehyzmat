@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Service, ServiceGalleryImage, Service_Category
-from advertisement.models import advertisementModel
+from advertisement.models import Advertisement
 from ratings.models import Like_Service, View_Service
 from users.models import User
 
@@ -99,5 +99,5 @@ class HomeCategoriesSerializers(serializers.ModelSerializer):
 
 class HomeAdvertisementsSerializers(serializers.ModelSerializer):
     class Meta:
-        model = advertisementModel
+        model = Advertisement
         fields = '__all__'
