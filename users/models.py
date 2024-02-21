@@ -4,6 +4,15 @@ from advertisement.views import validate_image, phone_regex
 
 
 class User(AbstractUser):
+    REGISTIRATION_CHOICES = [
+        ("email", "Email"),
+        ("google", "Google")
+    ]
+    registiration_method = models.CharField(
+        max_length=10,
+        choices=REGISTIRATION_CHOICES,
+        default='email'
+    )
     avatar = models.ImageField(upload_to="user/avatar_images", default="user/avatar_images/8380015.jpg")
     banner_image = models.ImageField(upload_to="user/avatar_bg_images", validators=[validate_image], default="user/avatar_bg_images/18220884_v1016-b-09.jpg")
     experience = models.IntegerField(blank=True, null=True)
