@@ -16,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['avatar', 'banner_image', 'username', 'email', 'experience', 'address', 'summary', 'web', 'tiktok', 'instagram', 'imo', 'fullname', 'phone']
+        fields = ['avatar', 'banner_image', 'username', 'email', 'experience', 'address', 'summary', 'web', 'tiktok', 'instagram', 'imo', 'first_name', "last_name", 'phone']
 
 
 class GetUsersSerializer(serializers.ModelSerializer):
@@ -47,7 +47,8 @@ class UserViewSerializers(serializers.ModelSerializer):
                     "id", 
                     "username", 
                     "avatar", 
-                    "fullname", 
+                    "first_name",
+                    "last_name", 
                     "rate_point", 
                     "banner_image", 
                     "summary",
@@ -115,7 +116,7 @@ class AuthTokenSerializer(serializers.Serializer):
 class LikeFromUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('fullname', 'avatar')
+        fields = ('first_name', 'avatar')
 
 
 class LikeToUserSerializer(serializers.ModelSerializer):
@@ -166,3 +167,10 @@ class LikedServiceSerializer(serializers.ModelSerializer):
         model = Like_Service
         fields = '__all__'
         depth = 1
+
+
+class LoginUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    class Meta:
+        model = User
+        fields = ("username", "password")

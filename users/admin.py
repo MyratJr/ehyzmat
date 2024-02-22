@@ -7,7 +7,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {"fields": ("username", "password")}),
-        (("Personal info"), {"fields": ("fullname", "email", "avatar", "banner_image", "experience", "address", "summary")}),
+        (("Personal info"), {"fields": ("first_name", "last_name", "email", "avatar", "banner_image", "experience", "address", "summary")}),
         (("Contact"), {"fields": ("web", "tiktok", "instagram", "imo", "phone")}),
         (("Points"), {"fields": ["rate_point", "rate_point_total", "point_counter", "view_counter", "like_counter"]}),
         (

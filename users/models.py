@@ -4,15 +4,6 @@ from advertisement.views import validate_image, phone_regex
 
 
 class User(AbstractUser):
-    REGISTIRATION_CHOICES = [
-        ("email", "Email"),
-        ("google", "Google")
-    ]
-    registiration_method = models.CharField(
-        max_length=10,
-        choices=REGISTIRATION_CHOICES,
-        default='email'
-    )
     avatar = models.ImageField(upload_to="user/avatar_images", default="user/avatar_images/8380015.jpg")
     banner_image = models.ImageField(upload_to="user/avatar_bg_images", validators=[validate_image], default="user/avatar_bg_images/18220884_v1016-b-09.jpg")
     experience = models.IntegerField(blank=True, null=True)
@@ -22,7 +13,8 @@ class User(AbstractUser):
     tiktok = models.CharField(max_length=50, blank=True, null=True)
     instagram = models.CharField(max_length=50, blank=True, null=True)
     imo = models.CharField(max_length=50, blank=True, null=True)
-    fullname = models.CharField(max_length=50, blank=True, null=True)
+    fisrt_name = models.CharField(max_length=50, blank=True, null=True)
+    last_name = models.CharField(max_length=50, blank=True, null=True)
     phone = models.CharField(validators=[phone_regex], max_length=12)
     rate_point = models.DecimalField(default=0, max_digits=3, decimal_places=2)
     rate_point_total = models.IntegerField(default=0)

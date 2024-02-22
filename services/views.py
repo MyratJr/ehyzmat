@@ -91,6 +91,6 @@ class FilterServiceList(generics.ListAPIView):
     queryset = Service.objects.all()
     serializer_class = ServicesSerializers
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    search_fields = ['user__username', 'user__fullname', 'name', 'category__name']
+    search_fields = ['user__username', 'user__firs_tname', 'name', 'category__name']
     ordering_fields = ["user__rate_point", "experience"]
     filterset_fields = ['category', 'place']
