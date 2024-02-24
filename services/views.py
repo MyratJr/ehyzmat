@@ -57,7 +57,6 @@ class HomeDataView(APIView):
         services = Service.objects.all(vip_is_active=True)
         categories = Service_Category.objects.all()
         advertisements = Advertisement.objects.filter(is_active=True)
-        check_advertisement_time(advertisements)
         services_serializer = HomeServicesSerializers(services, many=True, context={'request': request})
         categories_serializer = HomeCategoriesSerializers(categories, many=True, context={'request': request})
         advertisement_serializer = HomeAdvertisementsSerializers(advertisements, many=True, context={'request': request})

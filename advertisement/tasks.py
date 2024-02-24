@@ -5,7 +5,7 @@ from advertisement.models import Advertisement
 from datetime import date
 
 @app.task
-def my_task():
+def advertisement_vip_task():
     checking_services = Service.objects.filter(vip_date=date.today(), vip_is_active=True)
     checking_advertisements = Advertisement.objects.filter(expired_date=date.today(), is_active=True)
     print("Checking services' V.I.P expired times...")

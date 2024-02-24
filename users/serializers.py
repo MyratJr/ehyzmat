@@ -1,8 +1,9 @@
-from rest_framework import serializers
+from django.shortcuts import get_object_or_404
 from .models import User
 from ratings.models import Like_Service, Like_User, Rate_User
 from django.contrib.auth import authenticate
 from rest_framework import serializers
+from otp.models import OTP
 from django.http import Http404
 from services.models import Service
 
@@ -26,19 +27,28 @@ class GetUsersSerializer(serializers.ModelSerializer):
 
     
 class RegisterSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = User
-            fields = ['id', 'username', 'phone', 'email', 'password']
-            extra_kwargs = {'password': {'write_only': True}}
-        def create(self, validated_data):
-            user = User.objects.create_user(
-                validated_data['username'],
-                validated_data['email'],
-                validated_data['password'],
-                phone=validated_data['phone']
-            )
-            return user
+    otp = serializers.IntegerField(write_only=True)
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'phone', 'email', 'password', 'otp']
+        extra_kwargs = {'password': {'write_only': True}}
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            validated_data['username'],
+            validated_data['email'],
+            validated_data['password'],
+            phone=validated_data['phone']
+        )
+        return user
 
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    otp = serializers.IntegerField(write_only=True)
+    class Meta:
+        model = User
+        fields = ['phone', 'password', 'otp']
+        extra_kwargs = {'password': {'write_only': True}}
+        
 
 class UserViewSerializers(serializers.ModelSerializer):
     class Meta:
@@ -169,8 +179,7 @@ class LikedServiceSerializer(serializers.ModelSerializer):
         depth = 1
 
 
-class LoginUserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    class Meta:
-        model = User
-        fields = ("username", "password")
+class ChangePasswordSerializer(serializers.Serializer):
+    model = User
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)

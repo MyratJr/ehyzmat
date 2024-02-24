@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions, mixins
+from rest_framework import generics, permissions, mixins, viewsets
 from services.serializers import HomeServicesSerializers
 from ratings.models import Like_User, View_User, Rate_User
 from rest_framework.response import Response
@@ -12,7 +12,22 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from otp.models import OTP
+from fcm_django.models import FCMDevice
+from firebase_admin.messaging import Message, Notification
 
+# user = User.objects.get(username=username)
+# devices = FCMDevice.objects.filter(user=user.id)
+
+# devices.send_message(
+#                 message =Message(
+#                     notification=Notification(
+#                         title='Wallet Deposit from Admin',
+#                         body=f'Success🎉 Your account has been funded with ₦{amount}'
+#                     ),
+#                 ),
+#                 app=settings.FCM_DJANGO_SETTINGS['DEFAULT_FIREBASE_APP']
+#             )
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
@@ -20,8 +35,68 @@ class RegisterAPI(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        return Response({"user": UserSerializer(user, context=self.get_serializer_context()).data})
+        phone = serializer.validated_data["phone"]
+        temporary_otp = get_object_or_404(OTP, phone=phone)
+        otp = serializer.validated_data["otp"]
+        if temporary_otp.otp == otp and temporary_otp.is_expired is False:
+            temporary_otp.is_verified = True
+            temporary_otp.save()
+            user = serializer.save()
+            return Response({"user": UserSerializer(user, context=self.get_serializer_context()).data})
+        return Response("OTP is wrong or has expired", status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+        serializer_class = ChangePasswordSerializer
+        permission_classes = (IsAuthenticated,)
+
+        def get_object(self, queryset=None):
+            obj = self.request.user
+            return obj
+        
+        def update(self, request, *args, **kwargs):
+            self.object = self.get_object()
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                if not self.object.check_password(serializer.data.get("old_password")) or len(serializer.data.get("new_password"))<8:
+                    return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+                self.object.set_password(serializer.data.get("new_password"))
+                self.object.save()
+                response = {
+                    'status': 'success',
+                    'code': status.HTTP_200_OK,
+                    'message': 'Password updated successfully',
+                }
+                return Response(response)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangeForgotPassword(mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [permissions.AllowAny]
+    parser_classes = [MultiPartParser]
+    queryset = User.objects.all()
+
+    def partial_update(self, request, pk, *args, **kwargs):
+        kwargs['partial'] = True
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        otp = data.get("otp")
+        phone = data.get("phone")
+        password = data.get("password")
+        if len(password)<8:
+             raise serializers.ValidationError({
+                        'new_password': 'Password must be at least 8 characters long.'})
+        saved_otp = get_object_or_404(OTP, phone=phone)
+        if saved_otp.otp == otp and saved_otp.is_expired is False:
+            saved_otp.is_verified = True
+            user_change_password = User.objects.get(pk=pk)
+            user_change_password.set_password(password)
+            user_change_password.save()
+            saved_otp.save()
+            return Response({"success"})
+        raise serializers.ValidationError({"detail":"Your OTP is wrong or has expired"})
 
 
 class LoginAPI(LoginView):

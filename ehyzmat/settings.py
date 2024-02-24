@@ -1,3 +1,5 @@
+from firebase_admin import initialize_app, credentials
+from google.auth import load_credentials_from_file
 from datetime import timedelta
 from dotenv import load_dotenv
 from pathlib import Path
@@ -25,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'users',
+    'otp',
     'places',
     'services',
     'advertisement',
@@ -32,6 +35,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'knox',
     'django_filters',
+    'fcm_django',
 ]
 
 
@@ -79,7 +83,7 @@ REST_FRAMEWORK = {
         'knox.auth.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 1
+    'PAGE_SIZE': 1,
 }
 
 
@@ -110,6 +114,25 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
+
+
+custom_credentials = credentials.Certificate(r"C:\\Users\\MyratJr\\Downloads\\ehyzmat-d1d75-firebase-adminsdk-txvla-be89d78528.json")
+FIREBASE_MESSAGING_APP = initialize_app(custom_credentials, name='messaging')
+
+FCM_DJANGO_SETTINGS = {
+     # an instance of firebase_admin.App to be used as default for all fcm-django requests
+     # default: None (the default Firebase app)
+    "DEFAULT_FIREBASE_APP": FIREBASE_MESSAGING_APP,
+     # default: _('FCM Django')
+    "APP_VERBOSE_NAME": "What ever name",
+     # true if you want to have only one active device per registered user at a time
+     # default: False
+    "ONE_DEVICE_PER_USER": False,
+     # devices to which notifications cannot be sent,
+     # are deleted upon receiving error response from FCM
+     # default: False
+    "DELETE_INACTIVE_DEVICES": False,
 }
 
 
@@ -160,3 +183,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CELERY
 
 CELERY_BROKER_URL = "redis://localhost:6379/0"
+
+# Push Firebase Notification
+
+class CustomFirebaseCredentials(credentials.ApplicationDefault):
+    def __init__(self, account_file_path: str):
+        super().__init__()
+        self._account_file_path = account_file_path
+
+    def _load_credential(self):
+        if not self._g_credential:
+            self._g_credential, self._project_id = load_credentials_from_file(self._account_file_path,
+                                                                              scopes=credentials._scopes)

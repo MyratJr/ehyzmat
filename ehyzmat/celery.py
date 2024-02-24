@@ -11,10 +11,15 @@ app = Celery('ehyzmat')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
 app.conf.beat_schedule = {
-    'my_task': {
-        'task': 'places.tasks.my_task',
+    'advertisement_task': {
+        'task': 'advertisement.tasks.advertisement_vip_task',
         'schedule': crontab(hour=0, minute=0),
+    },
+    'OTP_task': {
+        'task': 'otp.tasks.otp_task',
+        'schedule': crontab(),
     }
+
 }
 
 app.autodiscover_tasks()
