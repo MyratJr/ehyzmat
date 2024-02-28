@@ -28,6 +28,7 @@ urlpatterns = [
     path('service/', include('services.urls')),
     path('ratings/', include('ratings.urls')),
     path('otp/', include('otp.urls')),
+    path('google_oauth2/', include('google_auth.urls')),
     re_path(f'^{settings.MEDIA_URL.lstrip("/")}(?P<path>.*)$',
             mediaserve, {'document_root': settings.MEDIA_ROOT})
 ]

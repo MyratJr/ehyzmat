@@ -13,21 +13,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from otp.models import OTP
-from fcm_django.models import FCMDevice
-from firebase_admin.messaging import Message, Notification
 
-# user = User.objects.get(username=username)
-# devices = FCMDevice.objects.filter(user=user.id)
 
-# devices.send_message(
-#                 message =Message(
-#                     notification=Notification(
-#                         title='Wallet Deposit from Admin',
-#                         body=f'Success🎉 Your account has been funded with ₦{amount}'
-#                     ),
-#                 ),
-#                 app=settings.FCM_DJANGO_SETTINGS['DEFAULT_FIREBASE_APP']
-#             )
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]

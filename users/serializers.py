@@ -1,9 +1,7 @@
-from django.shortcuts import get_object_or_404
 from .models import User
 from ratings.models import Like_Service, Like_User, Rate_User
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-from otp.models import OTP
 from django.http import Http404
 from services.models import Service
 
