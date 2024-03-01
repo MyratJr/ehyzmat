@@ -1,10 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from advertisement.views import validate_image, phone_regex
-
+from rest_framework_simplejwt.tokens import RefreshToken
+# from rest_framework_simplejwt.
 
 class User(AbstractUser):
     avatar = models.ImageField(upload_to="user/avatar_images", default="user/avatar_images/8380015.jpg")
+    REGISTRATION_CHOICES = {
+        'email':'Email',
+        'google': 'Google',
+    }
+    registration_method = models.CharField(
+        max_length=10,
+        default=REGISTRATION_CHOICES.get("email"),
+    )
     banner_image = models.ImageField(upload_to="user/avatar_bg_images", validators=[validate_image], default="user/avatar_bg_images/18220884_v1016-b-09.jpg")
     experience = models.IntegerField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
@@ -24,3 +33,11 @@ class User(AbstractUser):
 
     def __str__(self):
         return str(self.id)
+    
+
+    def tokens(self):
+        refresh = RefreshToken.for_user(self)
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token)
+        }

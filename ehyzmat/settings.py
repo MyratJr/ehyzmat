@@ -32,9 +32,12 @@ INSTALLED_APPS = [
     'services',
     'advertisement',
     'ratings',
+    "google_auth",
     'drf_yasg',
     'knox',
     'django_filters',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 
@@ -47,6 +50,28 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=20),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=1),
+}
+
+
+REST_FRAMEWORK_SIMPLEJWT = {
+    'ALGORITHM': 'HS256',  # Choose a suitable signing algorithm
+    'SECRET_KEY': os.environ['SECRET_KEY'],  # Securely store your secret key
+    'ENCRYPTION_ALGORITHM': 'AES256',  # Choose an encryption algorithm (optional)
+    'TOKEN_ENCRYPTION_METHOD': 'AES-256',
+    'TOKEN_CLAIMS': {
+        'user_id': {
+            'type': 'integer',
+            'encryption_algorithm': 'AES-256',  # Encrypt this specific claim
+        },
+    },
+}
+
+
 
 
 AUTH_USER_MODEL = 'users.User'
@@ -76,24 +101,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ehyzmat.wsgi.application'
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv("GOOGLE_OAUTH2_CLIENT_ID")
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv("GOOGLE_OAUTH2_CLIENT_SECRET")
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'knox.auth.TokenAuthentication',
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-        'rest_framework_social_oauth2.authentication.SocialAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 1,
 }
-
-
-AUTHENTICATION_BACKENDS = (
-   'rest_framework_social_oauth2.backends.DjangoOAuth2',
-   'django.contrib.auth.backends.ModelBackend',
-)
 
 
 SWAGGER_SETTINGS = {

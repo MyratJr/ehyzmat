@@ -4,7 +4,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
 import random
 from string import ascii_lowercase
-
+from django.shortcuts import get_object_or_404
 
 def generate_username(user_id):
     alphabet = ascii_lowercase
@@ -13,31 +13,31 @@ def generate_username(user_id):
 
 
 def register_social_user(provider, user_id, email):
-    filtered_user_by_email = User.objects.get(email=email)
-
-    if filtered_user_by_email:
-        if provider == filtered_user_by_email.registration_method:
-            authenticate(email=email, password=os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET'))
+    filtered_user_by_email = User.objects.filter(email=email)
+    
+    if filtered_user_by_email.exists():
+        if provider == filtered_user_by_email[0].registration_method:
+            authenticate(email=email, password=os.environ.get('SOCIAL_AUTH_PASSWORD'))
             return {
-                "username": filtered_user_by_email.username,
-                "email": filtered_user_by_email.email, 
-                "tokens": filtered_user_by_email.tokens()    
+                "username": filtered_user_by_email[0].username,
+                "email": filtered_user_by_email[0].email, 
+                "tokens": filtered_user_by_email[0].tokens()  
             }
         else:
             raise AuthenticationFailed(
-                detail="Please continue your login using" + filtered_user_by_email.registration_method
+                detail="Please continue your login using" + filtered_user_by_email[0].registration_method
             )
         
     else:
         user = {
             'username': generate_username(user_id), 'email': email,
-            'password': os.environ.get('SOCIAL_SECRET')}
+            'password': os.environ.get('SOCIAL_AUTH_PASSWORD')}
         user = User.objects.create_user(**user)
         user.registration_method = provider
         user.save()
 
-        new_user = authenticate(
-            email=email, password=os.environ.get('SOCIAL_SECRET'))
+        authenticate(
+            email=email, password=os.environ.get('SOCIAL_AUTH_PASSWORD'))
         return {
             'email': user.email,
             'username': user.username,
