@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     'ratings',
     "google_auth",
     'drf_yasg',
-    'knox',
+    # 'knox',
     'django_filters',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -53,24 +53,13 @@ MIDDLEWARE = [
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=20),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("JWT", ),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
-
-
-REST_FRAMEWORK_SIMPLEJWT = {
-    'ALGORITHM': 'HS256',  # Choose a suitable signing algorithm
-    'SECRET_KEY': os.environ['SECRET_KEY'],  # Securely store your secret key
-    'ENCRYPTION_ALGORITHM': 'AES256',  # Choose an encryption algorithm (optional)
-    'TOKEN_ENCRYPTION_METHOD': 'AES-256',
-    'TOKEN_CLAIMS': {
-        'user_id': {
-            'type': 'integer',
-            'encryption_algorithm': 'AES-256',  # Encrypt this specific claim
-        },
-    },
-}
-
 
 
 
@@ -104,7 +93,7 @@ WSGI_APPLICATION = 'ehyzmat.wsgi.application'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'knox.auth.TokenAuthentication',
+        # 'knox.auth.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -159,14 +148,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-REST_KNOX = {
-  'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
-  'AUTH_TOKEN_CHARACTER_LENGTH': 128,
-  'TOKEN_TTL': timedelta(days=30),
-  'USER_SERIALIZER': 'knox.serializers.UserSerializer',
-  'TOKEN_LIMIT_PER_USER': None,
-  'AUTO_REFRESH': True,
-}
+# REST_KNOX = {
+#   'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
+#   'AUTH_TOKEN_CHARACTER_LENGTH': 128,
+#   'TOKEN_TTL': timedelta(days=30),
+#   'USER_SERIALIZER': 'knox.serializers.UserSerializer',
+#   'TOKEN_LIMIT_PER_USER': None,
+#   'AUTO_REFRESH': True,
+# }
 
 
 LANGUAGE_CODE = 'en-us'

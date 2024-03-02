@@ -3,9 +3,7 @@ from services.serializers import HomeServicesSerializers
 from ratings.models import Like_User, View_User, Rate_User
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.contrib.auth import login
 from services.models import Service
-from knox.views import LoginView
 from .serializers import *
 from .models import User
 from rest_framework.views import APIView
@@ -13,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from otp.models import OTP
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class RegisterAPI(generics.GenericAPIView):
@@ -29,7 +28,11 @@ class RegisterAPI(generics.GenericAPIView):
             temporary_otp.is_verified = True
             temporary_otp.save()
             user = serializer.save()
-            return Response({"user": UserSerializer(user, context=self.get_serializer_context()).data})
+            refresh = RefreshToken.for_user(User.objects.get(id=user.id))
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            })
         return Response("OTP is wrong or has expired", status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -86,15 +89,20 @@ class ChangeForgotPassword(mixins.UpdateModelMixin, viewsets.GenericViewSet):
         raise serializers.ValidationError({"detail":"Your OTP is wrong or has expired"})
 
 
-class LoginAPI(LoginView):
+class LoginAPI(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, format=None):
         serializer = AuthTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
-        login(request, user)
-        return super(LoginAPI, self).post(request, format=None)
+        refresh = RefreshToken.for_user(User.objects.get(id=user.id))
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        })
+        # login(request, user)
+        # return super(LoginAPI, self).post(request, format=None)
     
 
 class UpdateUserAPIView(mixins.UpdateModelMixin,
@@ -153,6 +161,7 @@ class LikeUserAPIView(APIView):
 
     def post(self, request, pk):
         liked_user = get_object_or_404(User, pk=pk)
+        print(request.user.username)
         user, created = Like_User.objects.get_or_create(favoriting_user=request.user,favorited_user=liked_user)
         if created:
             liked_user.like_counter += 1

@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from advertisement.views import validate_image, phone_regex
 from rest_framework_simplejwt.tokens import RefreshToken
-# from rest_framework_simplejwt.
+
 
 class User(AbstractUser):
     avatar = models.ImageField(upload_to="user/avatar_images", default="user/avatar_images/8380015.jpg")
