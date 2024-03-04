@@ -18,6 +18,10 @@ app.conf.beat_schedule = {
     'OTP_task': {
         'task': 'otp.tasks.otp_task',
         'schedule': crontab(),
+    },
+    'flushexpiredtokens_task': {
+        'task': 'users.tasks.flushexpiredtokens_t',
+        'schedule': crontab(hour=0, minute=0),
     }
 
 }

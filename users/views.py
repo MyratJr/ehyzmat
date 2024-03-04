@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from otp.models import OTP
+from ehyzmat.settings import redis_cache
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -22,9 +22,9 @@ class RegisterAPI(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         phone = serializer.validated_data["phone"]
-        temporary_otp = get_object_or_404(OTP, phone=phone)
         otp = serializer.validated_data["otp"]
-        if temporary_otp.otp == otp and temporary_otp.is_expired is False:
+        temporary_otp = redis_cache.get(phone)
+        if temporary_otp and temporary_otp.decode() == otp:
             temporary_otp.is_verified = True
             temporary_otp.save()
             user = serializer.save()
@@ -48,7 +48,7 @@ class ChangePasswordView(generics.UpdateAPIView):
             self.object = self.get_object()
             serializer = self.get_serializer(data=request.data)
             if serializer.is_valid():
-                if not self.object.check_password(serializer.data.get("old_password")) or len(serializer.data.get("new_password"))<8:
+                if not self.object.check_password(serializer.data.get("old_password")):
                     return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
                 self.object.set_password(serializer.data.get("new_password"))
                 self.object.save()
@@ -75,16 +75,12 @@ class ChangeForgotPassword(mixins.UpdateModelMixin, viewsets.GenericViewSet):
         otp = data.get("otp")
         phone = data.get("phone")
         password = data.get("password")
-        if len(password)<8:
-             raise serializers.ValidationError({
-                        'new_password': 'Password must be at least 8 characters long.'})
-        saved_otp = get_object_or_404(OTP, phone=phone)
-        if saved_otp.otp == otp and saved_otp.is_expired is False:
-            saved_otp.is_verified = True
+        temporary_otp = redis_cache.get(phone)
+        if temporary_otp and temporary_otp.decode() == otp:
+            redis_cache.delete(phone)
             user_change_password = User.objects.get(pk=pk)
             user_change_password.set_password(password)
             user_change_password.save()
-            saved_otp.save()
             return Response({"success"})
         raise serializers.ValidationError({"detail":"Your OTP is wrong or has expired"})
 
@@ -101,8 +97,6 @@ class LoginAPI(APIView):
             'refresh': str(refresh),
             'access': str(refresh.access_token)
         })
-        # login(request, user)
-        # return super(LoginAPI, self).post(request, format=None)
     
 
 class UpdateUserAPIView(mixins.UpdateModelMixin,
@@ -145,11 +139,7 @@ class User_CategoriesAPIView(mixins.RetrieveModelMixin, generics.GenericAPIView)
             if created:
                 instance.view_counter = instance.view_counter + 1
                 instance.save()
-        new_data = [{
-                    "User_data": serializer.data,
-                    # "Liked_number": Like_User.objects.filter(favorited_user=instance).count(),
-                    # "Viewed_number": View_User.objects.filter(viewed_user=instance).count(),
-                    },{
+        new_data = [{"User_data": serializer.data}, {
                     "User_services": HomeServicesSerializers(services, many=True).data,
                     }]
         return Response(new_data)

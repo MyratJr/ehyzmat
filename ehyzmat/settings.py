@@ -1,21 +1,24 @@
-from firebase_admin import initialize_app, credentials
-from google.auth import load_credentials_from_file
 from datetime import timedelta
 from dotenv import load_dotenv
 from pathlib import Path
+import redis
 import os
-
-
 load_dotenv()
+
+
+redis_cache = redis.Redis(host='127.0.0.1', port=6379)
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 SECRET_KEY = os.getenv("SECRET_KEY")
+
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = str(os.getenv("ALLOWED_HOSTS")).split(",")
 
 
 INSTALLED_APPS = [
@@ -34,7 +37,6 @@ INSTALLED_APPS = [
     'ratings',
     "google_auth",
     'drf_yasg',
-    # 'knox',
     'django_filters',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -53,12 +55,11 @@ MIDDLEWARE = [
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(seconds=2),
+    "REFRESH_TOKEN_LIFETIME": timedelta(seconds=3),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
-    "AUTH_HEADER_TYPES": ("JWT", ),
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 
@@ -93,7 +94,6 @@ WSGI_APPLICATION = 'ehyzmat.wsgi.application'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'knox.auth.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -122,14 +122,12 @@ SWAGGER_SETTINGS = {
  }
 
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -148,28 +146,23 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# REST_KNOX = {
-#   'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
-#   'AUTH_TOKEN_CHARACTER_LENGTH': 128,
-#   'TOKEN_TTL': timedelta(days=30),
-#   'USER_SERIALIZER': 'knox.serializers.UserSerializer',
-#   'TOKEN_LIMIT_PER_USER': None,
-#   'AUTO_REFRESH': True,
-# }
-
-
 LANGUAGE_CODE = 'en-us'
+
 
 TIME_ZONE = 'Asia/Ashgabat'
 
+
 USE_I18N = True
+
 
 USE_TZ = True
 
 
 STATIC_URL = 'static/'
 
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 MEDIA_URL = '/media/'
 
@@ -177,5 +170,5 @@ MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# CELERY
+# REDIS_URL
 CELERY_BROKER_URL = "redis://localhost:6379/0"

@@ -4,7 +4,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
 import random
 from string import ascii_lowercase
-from django.shortcuts import get_object_or_404
+
 
 def generate_username(user_id):
     alphabet = ascii_lowercase
